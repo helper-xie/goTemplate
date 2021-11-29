@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example
+  namespace: not-default
+  labels:
+    app: golang
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golang
+  template:
+    metadata:
+      labels:
+        app: golang
+    spec:
+      containers:
+        - name: example
+          image: images:latest
+          ports:
+            - containerPort: 12350
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /etc/example.yaml
+              subPath: example.yaml
+              name: example-config
+      volumes:
+        - name: example-config
+          configMap:
+            name: example-config
+            items:
+              - key: "example.yaml"
+                path: "example.yaml"
+
+---
+
+apiVersion: v1
+data:
+  example.yaml: |-
+    listenOn: 0.0.0.0:12350
+kind: ConfigMap
+metadata:
+  name: example-config
+  namespace: no-default
